@@ -1,0 +1,84 @@
+﻿@page "/minecraft"
+@using System.Globalization;
+@using TeamCasual.Common.Minecraft;
+@inject HttpClient HttpClient
+
+<PageTitle>Minecraft</PageTitle>
+
+<h1>Minecraft</h1>
+
+<hr />
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col"></th>
+            <th scope="col">Name</th>
+            <th scope="col">Minecraft</th>
+            <th scope="col">Version</th>
+            <th scope="col">State</th>
+            <th scope="col">Region</th>
+            <th scope="col">Started</th>
+            <th scope="col">DNS</th>
+            <th scope="col">IP</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var server in Servers)
+        {
+            <tr>
+                <td>
+                    @if (server.State == ServerState.Stopped)
+                    {
+                        <button class="btn btn-sm btn-outline-success" onclick="@(() => StartServer(server.ServerName))">Start</button>
+                    }
+                    else if (server.State == ServerState.Running)
+                    {
+                        <button class="btn btn-sm btn-outline-danger" onclick="@(() => StopServer(server.ServerName))">Stop</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-sm btn-outline-success" disabled>Start</button>
+                    }
+                </td>
+                <th scope="row">@server.ServerName</th>
+                <td>@server.ServerType.ToString()</td>
+                <td>@server.MinecraftVersion</td>
+                <td>@server.State.ToString()</td>
+                <td>@server.AvailabilityZone</td>
+                <td>@server.LaunchTime?.ToString("g", CultureInfo.InvariantCulture)</td>
+                <td>@server.PublicDNS</td>
+                <td>@server.PublicIP</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@code {
+    public List<MinecraftServer> Servers { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await HttpClient.GetFromJsonAsync<List<MinecraftServer>>("minecraft/servers");
+        Servers = response!;
+
+        base.StateHasChanged();
+    }
+
+    public async Task StartServer(string serverName)
+    {
+        var response = await HttpClient.GetAsync($"minecraft/servers/start/{serverName}");
+        var message = await response.Content.ReadAsStringAsync();
+
+        Console.WriteLine(message);
+    }
+
+    public async Task StopServer(string serverName)
+    {
+        var response = await HttpClient.GetAsync($"minecraft/servers/stop/{serverName}");
+        var message = await response.Content.ReadAsStringAsync();
+
+        Console.WriteLine(message);
+    }
+}

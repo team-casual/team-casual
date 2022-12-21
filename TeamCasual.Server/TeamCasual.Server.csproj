@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TeamCasual.Common\TeamCasual.Common.csproj" />
     <ProjectReference Include="..\TeamCasual.UI\TeamCasual.UI.csproj" />
   </ItemGroup>
 
